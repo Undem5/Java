@@ -3,10 +3,15 @@ package lejcaaas;
 import java.util.ArrayList;
 
 /*
- * public String characGenerator(String array): type, variable, affect, word en paramètre
- * varLineBeautify(String variable, String type) : Renvoit la ligne correspond aux variables
+ * public String characGenerator(String array): type, variable, affect, word en paramètre.
+ * 
+ * varLineBeautify(String variable, String type) : Renvoit la ligne correspond aux variables.
+ * 
  * String varBeautify(int nb): nb de ligne qui dois apparaitre dans la partie variable et renvoit tout le texte.
+ * 
  * int indiceGenerator(String array): genere un nombre aléatoire suivant le type de données.
+ * 
+ * String commentGenerator() renvoit un commentaire ou saut de ligne.
  */
 
 
@@ -19,6 +24,8 @@ public class Generator {
 	private String start = "begin \n";
 	private String interm = "\tnew_line ;\n";
 	private String end = "end.";
+	private ArrayList<String> varUsed = new ArrayList<String>();
+	private ArrayList<String> typeVar = new ArrayList<String>();
 	
 	public static void main(String[] args) {
 		Generator lejcas = new Generator();
@@ -28,10 +35,9 @@ public class Generator {
 	
 	public void Generate() {
 		String progfinal = program;
-		//progfinal = progfinal.concat(varLineBeautify("variable","type"));
-		//progfinal = progfinal.concat(varLineBeautify("variable","type"));
 		
 		progfinal = progfinal.concat(varBeautify(indiceGenerator("variable")));
+		progfinal = progfinal.concat(bodyGenerator());
 		System.out.println(progfinal);
 		
 	}
@@ -41,11 +47,8 @@ public class Generator {
 		mot_cle.add("write");
 		mot_cle.add("read");
 		mot_cle.add("while");
-		mot_cle.add("end ;");
-		mot_cle.add("array [1 .. 20] of");
-		mot_cle.add("while");
 		mot_cle.add("if");
-		mot_cle.add("else");
+		//mot_cle.add("else");
 		return mot_cle;
 	}
 	
@@ -54,7 +57,7 @@ public class Generator {
 		mot_cle.add("integer");
 		mot_cle.add("boolean");
 		mot_cle.add("1 .. 20");
-
+		// array en attente
 		
 		return mot_cle;
 	}
@@ -98,7 +101,7 @@ public class Generator {
 				max = 3;
 				break;
 			case "word":
-				max = 7;
+				max = 3;
 				break;
 			case "variable":
 				max = 9;
@@ -141,7 +144,11 @@ public class Generator {
 	}
 	
 	public String varLineBeautify(String variable, String type) {
-		String line = tab.concat(characGenerator(variable)).concat(" : ").concat(characGenerator(type)).concat(eol).concat("\n");
+		String var = characGenerator(variable);
+		String ty = characGenerator(type);
+		varUsed.add(var);
+		typeVar.add(ty);
+		String line = tab.concat(var).concat(" : ").concat(ty).concat(eol).concat("\n");
 			
 		return line;
 	}
@@ -159,5 +166,147 @@ public class Generator {
 		}
 		texte = texte.concat("\n").concat(start);
 		return texte;
+	}
+	
+	public String bodyVarBeautify(String variable, String type) {
+		// Affection d'une variable dans le body
+		String text;
+		if( type.equals("True") || type.equals("False")) {
+			text=  tab.concat(variable).concat(" := ").concat(type).concat(eol).concat("\n");
+		}
+		else {
+			text = tab.concat(variable).concat(" := ").concat(String.valueOf((Math.random()*150))).concat(eol).concat("\n");
+		}
+/*		System.out.println("---------------");
+		System.out.println(text);
+		System.out.println("---------------");
+*/
+		return text;
+		
+	}
+	
+	public String commentGenerator() {
+		String text;
+		int i = (int)(Math.random()*2);
+	
+		if( i >= 1) {
+			text = "\t\t".concat("\n-- Hello I am a comment\n");
+		}
+		else {
+			text = "\n";
+		}
+		
+		return text;
+		
+	}
+	
+	public String bodyGenerator() {
+		String rep = commentGenerator();
+		rep = rep.concat(motSemantique(characGenerator("word")));
+		
+		return rep;
+	}
+	
+	public String motSemantique(String mot) {
+		
+		String text = null;
+		int i;
+		int i1, i2;
+		String var1=null, var2=null;
+		mot = mot.trim();
+		
+	
+		if( mot == "write") {
+			text = tab.concat(mot).concat("(\"Hello I am an input\")");
+			text = text.concat(eol).concat("\n");
+		}
+		else if( mot == "read" ) {
+			i = typeVar.indexOf("integer");
+			if( i == -1) {
+				i = typeVar.indexOf("boolean");
+				if( i == -1) {
+					i=0;
+				}
+			}
+			String var = varUsed.get(i);
+			text = tab.concat(mot).concat(("(" + var + ")")).concat("\n");
+		}
+		
+		else if( mot == "while") {
+			i = typeVar.indexOf("boolean");
+			text = "(";
+			// Generation de la condition
+			if( i == -1) {
+				i = 1;
+				for(int j=0; j<typeVar.size(); j++) {
+					if ( typeVar.get(j).equals("integer") && i<2) {
+						i = 2;
+						text = text.concat(varUsed.get(j));
+						if( i == 2) {
+							var2 = varUsed.get(j);
+							break; //Permet de réaliser une fois le var <= var2
+						}
+						System.out.println("var1 " + var1 + " j :" + j +" typeVar.size()");
+						var1 = varUsed.get(j);
+						text = text.concat(" <= ");
+					}
+				}
+			}
+			else { // cas boolean (var)
+				var1 = varUsed.get(i);
+				text = tab.concat(mot).concat("(").concat(var1).concat(")").concat("\n");
+				
+			}
+			//Génération du body
+			System.out.println("var2 est: " + var2);
+			if( var2 == null) {
+				// boolean
+				text = text.concat(bodyVarBeautify(var1,"False"));
+			}
+			else {
+				
+				text = text.concat(bodyVarBeautify(var1,null));
+			}
+			text = text.concat(tab).concat("end ;").concat("\n");
+			
+		}
+		else if( mot == "if") {
+			i = typeVar.indexOf("boolean");
+			text = "(";
+			// Generation de la condition
+			if( i == -1) {
+				i = 1;
+				for(int j=0; j<typeVar.size(); j++) {
+					if ( typeVar.get(j).equals("integer") && i<2) {
+						i = 2;
+						text = text.concat(varUsed.get(j));
+						if( i == 2) {
+							var2 = varUsed.get(j);
+							break; //Permet de réaliser une fois le var <= var2
+						}
+						var1 = varUsed.get(j);
+						text = text.concat(" <= ");
+					}
+				}
+			}
+			else { // cas boolean (var)
+				var1 = varUsed.get(i);
+				text = text.concat(var1).concat(")").concat("\n");
+				
+			}
+			//Génération du body
+			System.out.println("var2 est: " + var2);
+			if( var2 == null) {
+				// boolean
+				text = text.concat(bodyVarBeautify(var1,"False"));
+			}
+			else {
+				text = text.concat(bodyVarBeautify(var1,null));
+			}
+			text = text.concat(tab).concat("end ;").concat("\n");
+			
+		}
+		text = text.concat(end);
+		return text;
 	}
 }
