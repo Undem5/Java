@@ -13,7 +13,7 @@ public class ClientTransfert {
 	protected final int BUFFER_SIZE = 10000;
 	
 	public static void main(String[] args) throws IOException {
-		String nomFichier = "/home/userir/toto";
+		String nomFichier = "/home/userir/toto32";
 		ClientTransfert client = new ClientTransfert();
 		client.tadah(nomFichier);
 		
@@ -22,6 +22,7 @@ public class ClientTransfert {
 	
 	public void tadah(String nomFichier) throws IOException {
 		InetAddress servAddr = InetAddress.getLoopbackAddress();
+		//InetAddress servAddr = InetAddress.getByName("192.168.130.168");
 		Socket client = new Socket(servAddr,6666);
 		File file = new File("/home/userir/tutu");
 		

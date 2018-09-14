@@ -36,11 +36,20 @@ public class FileTransfertSocket {
 		file = file.trim();
 		File fichier = new File(file);
 		
-		buf = new byte[(int)fichier.length()];
+		buf = new byte[1000000000];
 		FileInputStream in1 = new FileInputStream(fichier);
 		java.io.OutputStream out = client.getOutputStream();
-		in1.read(buf);
-		out.write(buf);
+		int len = in1.read(buf);
+		
+
+		while( len >= 0) {
+			out.write(buf, 0, len);
+			System.out.println("biiiiiiiiiiiiiiiiiiiiiite");
+			len = in1.read(buf);
+			
+		}
+		
+		
 		System.out.println("Contenu envoyé");
 		
 		in1.close();
