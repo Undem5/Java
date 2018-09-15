@@ -170,17 +170,15 @@ public class Generator {
 	
 	public String bodyVarBeautify(String variable, String type) {
 		// Affection d'une variable dans le body
-		String text;
-		if( type.equals("True") || type.equals("False")) {
-			text=  tab.concat(variable).concat(" := ").concat(type).concat(eol).concat("\n");
+		String text = null;
+		if( type == null) {
+			
+			text = tab.concat(variable).concat(" := ").concat(String.valueOf((int)(Math.random()*150))).concat(eol).concat("\n");
+			
 		}
 		else {
-			text = tab.concat(variable).concat(" := ").concat(String.valueOf((Math.random()*150))).concat(eol).concat("\n");
+			text=  tab.concat(variable).concat(" := ").concat(type).concat(eol).concat("\n");
 		}
-/*		System.out.println("---------------");
-		System.out.println(text);
-		System.out.println("---------------");
-*/
 		return text;
 		
 	}
@@ -190,7 +188,7 @@ public class Generator {
 		int i = (int)(Math.random()*2);
 	
 		if( i >= 1) {
-			text = "\t\t".concat("\n-- Hello I am a comment\n");
+			text = "\n\t-- Hello I am a comment\n";
 		}
 		else {
 			text = "\n";
@@ -213,14 +211,14 @@ public class Generator {
 		int i;
 		int i1, i2;
 		String var1=null, var2=null;
-		mot = mot.trim();
+		//mot = mot.trim();
 		
 	
 		if( mot == "write") {
 			text = tab.concat(mot).concat("(\"Hello I am an input\")");
 			text = text.concat(eol).concat("\n");
 		}
-		else if( mot == "read" ) {
+		else if( mot == "read"  && varUsed.size() != 0) {
 			i = typeVar.indexOf("integer");
 			if( i == -1) {
 				i = typeVar.indexOf("boolean");
@@ -229,28 +227,31 @@ public class Generator {
 				}
 			}
 			String var = varUsed.get(i);
-			text = tab.concat(mot).concat(("(" + var + ")")).concat("\n");
+			text = tab.concat(mot).concat(("(" + var + ") ;")).concat("\n");
 		}
 		
-		else if( mot == "while") {
+		else if( mot == "while" && varUsed.size() != 0) {
 			i = typeVar.indexOf("boolean");
-			text = "(";
+			text = tab.concat(mot).concat("(");
 			// Generation de la condition
 			if( i == -1) {
 				i = 1;
 				for(int j=0; j<typeVar.size(); j++) {
-					if ( typeVar.get(j).equals("integer") && i<2) {
-						i = 2;
+					if ( typeVar.get(j).equals("integer") && i<=2) {
+						
 						text = text.concat(varUsed.get(j));
 						if( i == 2) {
 							var2 = varUsed.get(j);
+							System.out.println("text ! " + text);
+							text = text.concat(var2).concat(")").concat("\n");
 							break; //Permet de réaliser une fois le var <= var2
 						}
-						System.out.println("var1 " + var1 + " j :" + j +" typeVar.size()");
 						var1 = varUsed.get(j);
 						text = text.concat(" <= ");
+						i = 2;
 					}
 				}
+				
 			}
 			else { // cas boolean (var)
 				var1 = varUsed.get(i);
@@ -258,19 +259,34 @@ public class Generator {
 				
 			}
 			//Génération du body
-			System.out.println("var2 est: " + var2);
-			if( var2 == null) {
+			if( var2 == null && var1 != null) {
 				// boolean
-				text = text.concat(bodyVarBeautify(var1,"False"));
+				
+				text = text.concat(tab).concat(bodyVarBeautify(var1,"False"));
+				System.out.println("L266");
 			}
 			else {
+				if( var2 != null) {
+					text = text.concat(tab).concat(bodyVarBeautify(var2,null));
+					System.out.println("L271");
+				}
+				else if (var1 != null){
+					//text = text.concat(tab).concat(bodyVarBeautify(var1,null));
+					text = text.concat(tab).concat(bodyVarBeautify(var1,null));
+					System.out.println("L276");
+
+				}
+				else {
+					//text = text.concat(tab).concat(bodyVarBeautify(varUsed.get(0),null));
+					text = text.concat(tab).concat(bodyVarBeautify(varUsed.get(0),null));
+					System.out.println("L282");
 				
-				text = text.concat(bodyVarBeautify(var1,null));
+				}
 			}
 			text = text.concat(tab).concat("end ;").concat("\n");
 			
 		}
-		else if( mot == "if") {
+		else if( mot == "if" && varUsed.size() != 0) {
 			i = typeVar.indexOf("boolean");
 			text = "(";
 			// Generation de la condition
@@ -282,6 +298,7 @@ public class Generator {
 						text = text.concat(varUsed.get(j));
 						if( i == 2) {
 							var2 = varUsed.get(j);
+
 							break; //Permet de réaliser une fois le var <= var2
 						}
 						var1 = varUsed.get(j);
@@ -295,7 +312,6 @@ public class Generator {
 				
 			}
 			//Génération du body
-			System.out.println("var2 est: " + var2);
 			if( var2 == null) {
 				// boolean
 				text = text.concat(bodyVarBeautify(var1,"False"));
@@ -304,6 +320,11 @@ public class Generator {
 				text = text.concat(bodyVarBeautify(var1,null));
 			}
 			text = text.concat(tab).concat("end ;").concat("\n");
+			
+		}
+		else {
+			text = commentGenerator();
+			text = text.concat(tab).concat("null ;").concat("\n");
 			
 		}
 		text = text.concat(end);
