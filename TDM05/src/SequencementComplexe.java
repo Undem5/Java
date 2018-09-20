@@ -7,45 +7,56 @@ public class SequencementComplexe extends Thread{
 	
 	public static void main(String[] args) throws InterruptedException {
 		
-		SequencementSimple t1 = new SequencementSimple("1",5000,10000);
-		SequencementSimple t2 = new SequencementSimple("2",1,5000);
-		SequencementSimple t3 = new SequencementSimple("3",6000,100000);
+		SequencementSimple t1 = new SequencementSimple("1",5,100);
+		SequencementSimple t2 = new SequencementSimple("2",1,50);
+		SequencementSimple t3 = new SequencementSimple("3",60,100);
 		SequencementSimple t4 = new SequencementSimple("4",5,10);
-		SequencementSimple t5 = new SequencementSimple("5",800000,10000000);
-		SequencementSimple t6 = new SequencementSimple("6",156561556,584544445);
-		SequencementSimple t7 = new SequencementSimple("6",464,491948);
+		SequencementSimple t5 = new SequencementSimple("5",800,1000);
+		SequencementSimple t6 = new SequencementSimple("6",1565,5845);
+		SequencementSimple t7 = new SequencementSimple("7",46,448);
 		
 		t1.start();
 		
-		while( !t7.isInterrupted()) {
+		while( !t7.getState().toString().equals("TERMINATED")) {
 			
-			if( t1.isInterrupted()) {
+			if( !t1.isAlive()) {
 				System.out.println(t1.getName() + " is ded");
 				t2.start();
 				t3.start();
 				t4.start();
+				
+				t2.join();
+				t3.join();
+				t4.join();
+				
 			
 			}
 			
-			if( t2.isInterrupted() && t3.isInterrupted()) {
+			if( !t2.isAlive() && !t3.isAlive()) {
 				System.out.println(t2.getName() + " et " + t3.getName() + " is ded ");
 				t5.start();
+				
+				t5.join();
 			}
 			
-			if( t4.isInterrupted()) {
+			if( !t4.isAlive()) {
 				System.out.println(t4.getName() + " is ded");
 				t6.start();
 				
+				t6.join();
+				
 			}
-			if( t6.isInterrupted() && t5.isInterrupted()) {
-				System.out.println(t4.getName() + " et " + t5.getName() + " is ded ");
+			if( !t6.isAlive() && !t5.isAlive()) {
+				System.out.println(t6.getName() + " et " + t5.getName() + " is ded ");
 				t7.start();
+				
+				t7.join();
 
 			}
 			
 			
 		}
-		if( t7.isInterrupted()) {
+		if( !t7.isAlive()) {
 			System.out.println(t7.getName() + " is ded");
 
 		}		
@@ -74,7 +85,6 @@ public class SequencementComplexe extends Thread{
 			e.printStackTrace();
 		}finally {
 			System.out.println("La tâche " + Thread.currentThread().getName() + " vient de se réveiller");
-			Thread.currentThread().interrupt();
 			
 		}
 		
