@@ -30,11 +30,13 @@ public class Arbitre extends Thread {
 		
 		if( auto.get(numPhilo) ==  true) {
 		
-			// Cas extreme num 0 avec num 5 et num 1
 			if( numPhilo == 0 && auto.get(numPhilo+1) == true && auto.get(auto.size()-1) == true) {
+				
 				res = true;
 				auto.set(numPhilo, false);
 				System.out.println("L'arbitre autorise les baguettes");
+				System.out.println(" THREAD 0: " + auto.size());
+				
 			}
 			else if( numPhilo == auto.size()-1 && auto.get(numPhilo-1) == true && auto.get(0) == true) {
 				res = true;
