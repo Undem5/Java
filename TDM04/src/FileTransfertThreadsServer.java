@@ -44,7 +44,7 @@ public class FileTransfertThreadsServer extends Thread{
 		int totalRead=0;
 		int remaining = filesize;
 		
-		while( (read = dis.read(buffer,0,Math.min(buffer.length, remaining))) > 0) {
+		while( (read = dis.read(buffer)) != -1) {
 			totalRead += read;
 			remaining -= read;
 			fos.write(buffer, 0, read);

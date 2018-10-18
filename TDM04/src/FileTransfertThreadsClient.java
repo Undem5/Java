@@ -13,7 +13,7 @@ public class FileTransfertThreadsClient {
 		try {
 			
 			s = new Socket(host,port);
-		
+			sendFile(fils);
 		}catch(IOException e) {
 			e.printStackTrace();
 		}
@@ -27,10 +27,10 @@ public class FileTransfertThreadsClient {
 		FileInputStream fis = new FileInputStream(file);
 		
 		byte[] buffer = new byte[4096];
-		
-		while( fis.read(buffer) > 0) {
+		int len;
+		while( (len=fis.read(buffer)) != -1) {
 			
-			dos.write(buffer);
+			dos.write(buffer,0,len);
 		}
 		
 		fis.close();
@@ -39,7 +39,7 @@ public class FileTransfertThreadsClient {
 		
 	}
 	
-	public static void mian(String[] args) {
-		FileTransfertThreadsClient toto = new FileTransfertThreadsClient("localhost",1998,"fichier.txt");
+	public static void main(String[] args) {
+		FileTransfertThreadsClient toto = new FileTransfertThreadsClient("localhost",1998,"output.img");
 	}
 }
