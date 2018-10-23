@@ -1,0 +1,161 @@
+############ CLIENT TCP #################
+
+public static final PORT = 6666;
+
+
+public void execute() throws IOException{
+
+	InetAddress serv = InetAddress.getLoopBackAddress();
+	Socket client = new Socket(serv,PORT);
+
+	//Sortie
+	PrintWriter out = new PrintWriter(client.getOutputStream(),true);
+	out.println("toto");
+	
+	//Entrée:
+	BufferedReader br = new BufferedReader(new InputStreamReader(client.getInputStream()));
+	String s = br.readline();
+	
+	System.out.println("End client");
+	out.close();
+	int.close();
+	client.close()
+
+}
+
+	#### Autre méthode ###
+//
+		System.out.println("Demarrage du client ...");
+		
+		//Creation de la socket
+		Socket socket = new Socket();
+		
+		// Connexion au serveur 
+		InetSocketAddress adrDest = new InetSocketAddress("127.0.0.1", 5099);
+		socket.connect(adrDest);		
+		
+		// Envoi de la requete
+		byte[] bufE = new String("question du client").getBytes();
+		OutputStream os = socket.getOutputStream();
+		os.write(bufE);
+		System.out.println("Message envoye");
+		
+		// Attente de la reponse 
+		byte[] bufR = new byte[2048];
+		InputStream is = socket.getInputStream();
+		int lenBufR = is.read(bufR);
+		String reponse = new String(bufR, 0 , lenBufR );
+		System.out.println("Reponse recue = "+reponse);
+		
+		// Fermeture de la socket
+		socket.close();
+		System.out.println("Arret du client .");
+
+
+
+/**
+	 * Methode utilitaire permettant de lire au minimum nbByte octets dans le fux is
+	 * 
+	 * A noter : si la methode read retourne plus de caracteres que nbByte, 
+	 * alors les caracteres lus en plus sont ajoutes dans la reponse 
+	 */
+	private StringBuffer readInputStream(int nbByte, InputStream is) throws IOException
+	{
+		StringBuffer buf = new StringBuffer();
+
+		// Nombre de caracteres reellement lus au total
+		int nbByteRead=0;
+		
+		int nb;
+		byte[] bufR = new byte[1024];
+		
+		while(nbByteRead<nbByte)
+		{
+			nb = is.read(bufR);
+			if (nb==-1)
+			{
+				throw new IOException("Fin du stream atteinte avant d'avoir lu "+nbByte+" octets");
+			}
+			nbByteRead = nbByteRead+nb;
+			buf.append(new String(bufR,0,nb));
+		}
+		return buf;
+		
+	}
+######### SERVEUR TCP ####################
+
+
+public void execute() throws IOException{
+
+	ServerSocket serv = new ServerSocket(666);
+	Socket client = serv.accept();
+	System.out.println("Server : " + client.getInetAddress().getHostAddress() +  "" + client.getPort());
+
+	
+	PrintWriter out = new PrintWriter(client.getOutputStream(),true);
+	BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
+	String line;
+		
+	out.println("Teeeest");
+	while( (line = in.readLine()) != null) {
+		System.out.println(line);
+	}
+		
+	System.out.println("END");
+	out.close();
+	in.close();
+	client.close();
+	serv.close();	
+	
+
+}
+
+
+	### autre méthode ###
+
+	private void execute() throws IOException
+	{
+		//
+		System.out.println("Demarrage du serveur ...");
+		
+		// Le serveur se declare aupres de la couche transport
+		// sur le port 5099
+		ServerSocket socketEcoute = new ServerSocket();
+		socketEcoute.bind(new InetSocketAddress(5099));
+
+		// Permet de compter le nombre de clients servis
+		int nbClient = 1;
+		
+		while(nbClient<4)
+		{
+			// Attente de la connexion d'un client
+			System.out.println("Attente de la connexion du client "+nbClient+"...");
+			Socket socketConnexion = socketEcoute.accept();
+			
+			// Un client s'est connecte, le serveur lit le message envoye par le le client (sans garantie de lire tout le message)
+			byte[] bufR = new byte[2048];
+			InputStream is = socketConnexion.getInputStream();
+			int lenBufR = is.read(bufR);
+			String message = new String(bufR, 0 , lenBufR);
+			System.out.println("Message recu = "+message);
+			if (message.equals("stop")==true)
+			{
+				break;
+			}
+			
+			// Emission d'un message en retour
+			byte[] bufE = new String("ok").getBytes();
+			OutputStream os = socketConnexion.getOutputStream();
+			os.write(bufE);
+			System.out.println("Message envoye = ok");
+			
+			// Fermeture de la socket de connexion
+			socketConnexion.close();
+			
+			// On incremente le nombre de clients servis
+			nbClient++;
+		}
+		
+		socketEcoute.close();
+		System.out.println("Arret du serveur .");
+	}

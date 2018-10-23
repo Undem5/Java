@@ -19,8 +19,13 @@ public class FileTransfert {
 		
 		byte[] buf = new byte[(int) file.length()];
 		File file2 = new File("/home/userir/toto2");
+	
+		
 		//BufferedReader in = new BufferedReader( new FileReader(file));
+		
 		FileInputStream in = new FileInputStream(file);
+		
+		
 		FileOutputStream out = new FileOutputStream(file2);
 	
 		in.read(buf);

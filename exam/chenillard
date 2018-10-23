@@ -1,0 +1,96 @@
+#### Fenêtres colorées = serveurs + 1 client udp qui lance sur plusieurs port ##################
+
+########## SERVEUR CLASSIQUE ######################
+
+	JFrame frame;
+	public final static int PORT=3000;
+	protected final static int PACKET_SIZE=100;
+	InetAddress servAddr;
+	DatagramSocket sock;
+	
+	
+	public Frame1() throws InterruptedException, IOException {
+		frame = new JFrame();
+		frame.setSize(300, 300);
+		frame.getContentPane().setBackground(Color.GREEN);
+		frame.setVisible(true);
+		InetAddress servAddr = InetAddress.getLoopbackAddress();
+		DatagramSocket sock = new DatagramSocket(PORT,servAddr);
+		System.out.println("Serveur Lancé");
+		while(true) {
+			byte[] buffer = new byte[PACKET_SIZE];
+
+			DatagramPacket request = new DatagramPacket(buffer,buffer.length);
+			
+			
+			sock.receive(request);
+			System.out.println("Paquet reçu de " + servAddr.getHostName() + " port: " + sock.getLocalPort() + 
+					" de contenu " + new String(buffer,0,request.getLength()));
+			frame.getContentPane().setBackground(Color.RED);
+			Thread.sleep(1000);
+			frame.getContentPane().setBackground(Color.GREEN);
+			
+			
+
+		}
+	
+	}
+	
+	public static void main(String[] args) throws InterruptedException,IOException {
+		Frame1 frame1 = new Frame1();
+	}	
+
+############# CLIENT #############################
+
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+
+public class maitre {
+
+	public final static int PORT=3000;
+	protected static int i=0;
+	
+	public static void main(String []argv) throws IOException, InterruptedException{
+		
+		while(true && i<4) {
+			InetAddress servAddr = InetAddress.getLoopbackAddress();
+			DatagramSocket sock = new DatagramSocket();
+			
+			byte[] buffer = "frame".getBytes();
+			
+			
+			DatagramPacket packet = new DatagramPacket(buffer,buffer.length,servAddr,PORT+i);
+			packet.setLength(buffer.length);
+			sock.send(packet);
+			System.out.println("paquet envoyé");
+			Thread.sleep(1000);
+			i = i+1;
+		}
+		
+				
+	}
+}
+
+########### Version plus poussée #################
+
+	private int portR;
+	private ArrayList<Client> list;
+	private ServeurUDP srv;
+
+	public ColorServer(String[] args) throws SocketException {
+		this.portR = Integer.parseInt(args[1]);
+		this.list = new ArrayList<Client>();
+
+		srv = new ServeurUDP(portR);
+	}
+	
+	public void run () throws IOException, InterruptedException {
+		while(!waitCli(list));
+		while(true) {
+			for(Client cli : list) {
+				blinkCli(cli); // red, sleep, green
+			}
+		}
+	}

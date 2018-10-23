@@ -1,0 +1,130 @@
+################## UDP ##########################
+
+public Questions() throws IOException {
+		
+		InetAddress servAddr = InetAddress.getLoopbackAddress();
+		DatagramSocket sock = new DatagramSocket();
+		byte[] buffer= "JOUER".getBytes();
+		byte[] reponse = new byte[BUFFER_SIZE];
+		
+		DatagramPacket request = new DatagramPacket(buffer,buffer.length,servAddr,PORT);
+		DatagramPacket response = new DatagramPacket(reponse,reponse.length,servAddr,PORT);
+		
+		sock.send(request);
+		System.out.println("JOUER envoyé");
+		sock.receive(response);
+		StringBuilder sb = new StringBuilder(new String(reponse,0,reponse.length));
+		
+		System.out.println("Message reçu: "+ new String(reponse,0,reponse.length));
+		
+		reponse = decode(sb);
+		//reponse = byte[]
+		
+		request = new DatagramPacket(reponse,reponse.length,servAddr,PORT);
+		response = new DatagramPacket(reponse,reponse.length,servAddr,PORT);
+		
+		sock.send(request);
+		System.out.println("Reponse envoyé");
+		sock.receive(response);
+		
+	//	String message = new String(reponse,0,reponse.length);
+		String message = new String(reponse,StandardCharsets.UTF_8);
+		System.out.println("Message reçu " + message);
+		
+		sock.close();
+		
+		
+		
+		
+	}
+	
+	public byte[] decode(StringBuilder sb) {
+		
+		String reponse = "R";
+		byte[] buffer = new byte[BUFFER_SIZE];
+		int position, position2, position3;
+		int nombre1;
+		int nombre2;
+		sb.deleteCharAt(0); //Delete Q
+		position = sb.indexOf(":");
+	
+		if( position != 0) {
+			String numberQ = sb.substring(0, position);
+			System.out.println("The number of Q is: " + numberQ);
+			
+			reponse = reponse.concat(numberQ);
+			reponse = reponse.concat(":");
+			
+			String question = sb.substring(position+1);
+			position2 = sb.indexOf("+");
+			position3 = sb.indexOf("=");
+			System.out.println(sb.substring(position+1,position2));
+			nombre1 = Integer.parseInt(sb.substring(position+1,position2));
+			nombre2 = Integer.parseInt(sb.substring(position2+1, position3));
+			System.out.println("nb1 " + nombre1 + " nb2 " + nombre2);
+			nombre2 = nombre2 + nombre1;
+			question = String.valueOf(nombre2);
+			reponse = reponse.concat(question);
+			buffer = reponse.getBytes();
+			
+		}
+		else {
+			System.out.println("Erreur position");
+			System.exit(1);
+		}
+		return buffer;
+}
+
+
+################# TCP #####################"
+
+	
+		InetAddress servAddr = InetAddress.getByName("192.168.130.150");
+		Socket client = new Socket(servAddr, 7500);
+		System.out.println("Client lance");
+		PrintWriter out = new PrintWriter(client.getOutputStream(),true);
+		//BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
+		InputStream in = client.getInputStream();
+		
+		String line;
+		byte[] cbuf = new byte[1024];
+		
+		System.out.println("test");
+		// fonctionne car petit stream
+		in.read(cbuf); 
+		
+		line = new String(cbuf,0,cbuf.length);
+		
+		System.out.println("La question est :" + line);
+		String reponse = decode(line);
+		System.out.println("La réponse est: " + reponse);
+		out.println(reponse);
+		in.read(cbuf);
+		System.out.println("Reponse du severu " + new String(cbuf,0,cbuf.length));
+		out.close();
+		in.close();
+		client.close();
+	}
+	
+	public String decode(String line) {
+		
+		StringBuilder message = new StringBuilder(line);
+		StringBuilder message2;
+		int position1, position2;
+		int nombre1, nombre2;
+		
+		position1 = message.indexOf("=");
+		StringBuilder operation = new StringBuilder(message.substring(0,position1));
+		position2 = operation.indexOf("+");
+		nombre1 = Integer.parseInt(operation.substring(0,position2));
+		nombre2 = Integer.parseInt(operation.substring(position2+1, position1));
+		
+		String res = String.valueOf(nombre1 + nombre2);
+		res.concat(";");
+		message2 = new StringBuilder( message.substring(position1+2));
+		
+		if( (message2.indexOf("=")) != -1) {
+			System.out.println("Seconde Question");
+		}
+		return res;
+}

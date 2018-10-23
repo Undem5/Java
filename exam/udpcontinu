@@ -1,0 +1,89 @@
+
+###################################### Client ######################
+public static void main(){
+	clientUDP toto = new clientUDP();
+	toto.execute();
+}
+
+
+private void execute() throws IOException{
+
+
+	// Création et envoi du message
+	DatagramSocket socket = new DatagramSocket();
+	InetSocketAddress adrdest = new InetSocketAddress("192.168.130.162",2000);
+	byte[] bufE;
+	DatagramPacket dpE;
+
+	BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+	String s = br.readLine();
+	while( !s.equals("q")){
+		bufE = s.getBytes();
+		dpE = new DatagtamPacket(bufE,bufE.length,adrdest);
+		socket.send(dpE);
+		System.out.println("Message envoyé");
+		s = br.readline();
+	}
+
+	//Attente réponse
+	byte[] bufR = new byte[4096];
+	DatagramPacket dpR = new DatagramPacket(bufR,bufR.length);
+	socket.receive(dpR);
+	String reponse = new String(bufR,bufR.getOffset(),bufR.getLength());
+	System.out.println("Réponse: " + reponse);
+	socket.close();
+
+}
+############################ Serveur echo/reply ##########################
+
+public final static int PORT = 3000;
+protected final static int PACKET_SIZE =100;
+
+main(){
+
+}
+
+public void execute(){
+
+
+	InetAddres serv = InetAddress.getLoopbackAddress();
+	DatagramSocket sock = new DatagramSocket(PORT,servAddr);
+	
+		ou
+	DatagramSocket socket = new DatagramSocket(null);
+	socket.bind(new InetSocketAddress(2000));
+
+	//Attente premier message
+	byte[] bufR = new byte[4096];
+	DatagramPacket dpR = new DatagramPacket(bufR,bufR.length);
+	socket.receive(dpR);
+	String msg = new String(bufR,bufR.getOffset(),bufR.getLength());
+	
+
+	//Emission message en retour
+	byte[] bufE = new byte[4096];
+	DatagramPacket dpE = new DatagramPacket(bufE,bufE.length,dpr.getAddress(),dpr.getPort());
+	socket.send(dpE);
+	System.out.println("Message envoyé");
+
+	socket.close();
+	System.out.println("Arret serveur");
+
+
+}
+
+############ Serveur listen ###############
+
+	InetAddress serv = InetAddress.getLoopBackAddress();
+	DatagramSocket sock = new DatagramSocket(PORT,servAddr);
+	
+	//server lancé
+	while(true){
+		byte[] buffer = new byte[PACKET_SIZE];
+		DatagramPacket request = new DatagramPacket(buffer,buffer.length);
+		sock.receive(request);
+
+		System.out.println("Message recu de " +servAddr.getHostname() +" port " + sock.getLocalPort()
+			+ " de contenu " + ...);
+
+	}
