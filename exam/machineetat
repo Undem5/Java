@@ -1,0 +1,76 @@
+
+
+public class JoueurTCP{
+
+	public static void main(String[] args){
+		JoueurTCP toto = new JoueurTCP();
+		toto.play();
+	}
+
+	
+	private void play() throws IOException {
+		Socket socket = new Socket("127.0.0.1",7500);
+		OutputStream os = socket.getOutputStream();
+		IntputStream in = socket.getInputStream();
+
+		JoueurStream js = new JoueurStream(os);
+
+		byte[] buf = new byte[1024];
+		int len = is.read(buf);
+
+		while( len !=-1){
+			js.write(buf,0,len);
+			len = is.read(buf);
+		}
+
+		js.close();
+		socket.close();
+
+	}	
+}
+
+static public enum State {
+	OP1, // operande 1
+	OP2,
+	QUESTION_MARK;
+
+}
+
+static public class JoueurStream extends OutputStream{
+	private OutputStream os;
+	private State state;
+
+	int op1=0;
+	int op2=0;
+
+	public JoueurStream(OutputStream os){
+		this.os = os;
+		this.state = State.OP1;
+	}
+	
+	public void write(int b) throws IOException{
+		
+		switch(state){
+
+			case OP1:
+				if( b=='+') state= State.OP2;
+				else	op1 = op1*10+(b-'0');
+				break;
+			case OP2:
+				if( b == '=') state = State.QUESTION_MARK;
+				else	op2 = op2*10+(b-'0');
+				break;
+			case QUESTION_MARK!
+				String reponse = (op1+op2)+";";
+				os.write(reponse.getBytes());
+				System.out.println("Envoi réponse");
+
+				op1 = 0;
+				op2 = 0;
+				state = State.OP1;
+				break;
+		}	
+
+	}
+		
+}

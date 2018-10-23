@@ -1,0 +1,134 @@
+############# Envoi de fichier simple ################
+public class FileTransfert {
+
+	
+public class FileCopy {
+
+	public static void main(String[] args) throws IOException {
+		
+		int len;
+		File file = new File(args[0]);
+		FileInputStream input = new FileInputStream(args[0]);
+		len = (int) file.length();
+		System.out.println(len);
+		
+		FileOutputStream output = new FileOutputStream(args[1]);
+		byte[] stream = new byte[4096];
+		
+		while((len = input.read(stream)) != -1){
+			output.write(stream, 0, len);
+		}
+		
+		input.close();
+		output.close();
+
+	}
+}
+
+
+
+########### Envoi de fichier Threads TCP #############
+
+##Client 
+public class FileTransfert{
+
+	private Socket s;
+
+	public FileTransfert(String host, int port, String fichier){
+		
+		try{
+			s = new Socket(host, port);
+			sendFile(fichier);
+		}catch(IOException e){
+			e.printStackTrace();
+		}
+	}
+
+	public void sendFile(String file) throws IOException{
+			
+		DataOutputStream dos = new DataoutputStream( s.getOutputStream());
+		FileInputStream fis = new FileInputStream(file);
+
+		byte[] buffer = new byte[4096];
+		int len;
+		
+		while( (len =fis.read(buffer)) != -1){
+			dos.write(buffer,0,len);
+		}
+		
+		fis.close();
+		dos.close();
+
+	}
+
+	public static void main(String[] args){
+		FileTransfert toto = new FileTransfert("localhost",2000,fichier.txt);
+	}
+
+}
+
+##SERVER
+
+public class FileTransfertServer extends Thread{
+
+	private ServerSocket s;
+	
+	public FileTransfertServer(int port){
+
+		try{
+			s = new ServerSocket(port);
+		}catch(IOException e){
+			e.printStackTrace();
+		}
+	}
+
+	public void run(){
+
+		while(true){
+			try{
+				Socket client = s.accept();
+				sendFile(client);
+			}catch(IOException e) {
+				e.printStackTrace();
+			}
+
+		}
+
+	}
+
+	private void saveFile(Socket client) throws IOException {
+		DataInputStream dis = new DataInputStream(client.getInputStream());
+
+		File test = new File("sortie.txt");
+		FileOutputStream fos = new FileOutputStream(test);
+		
+		byte[] buffer = new byte[4096];
+		int filesize = (int) test.length;
+		int read = 0;
+		int totalRead = 0;
+		int remaining = filesize;
+
+		while( (read=dis.read(buffer)) != -1){
+			totalRead += read;
+			remaining -= read;
+			fos.write(buffer,0,read);
+			System.out.println("----------------");
+			System.out.println(repeat("*",totalRead));
+
+		}
+		
+		fos.close();
+		dis.close();
+	}		
+
+	public static void main(String[] args){
+		FileTransfertServer fts = new FileTransfert(1998);
+		fts.start();
+	}
+
+
+
+	public static String repeat(String str, int times){
+		return new String( new char[times]).replace("\0",str);
+	}
+}

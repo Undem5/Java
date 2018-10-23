@@ -1,0 +1,99 @@
+################### Version Prof ########################
+
+public class Worker extends Threads{
+
+
+	private Job job;
+
+	public void run(){
+		try{
+			
+			while(true){
+				waitaJob();	
+				doIt();
+				releaseJob();
+			}
+		}catch(IOException e){
+			e.printStackTrace();
+		}
+
+	}
+
+	public synchronized void waitaJob() throws InterruptedException{
+
+		while( job == null){
+			wait(); // pas if()
+		}
+	}
+
+	private void doIt() throws InterruptedException {
+		
+		sleep(22200);
+		System.out.println("Job done "+ job);
+	}
+
+	public synchronized void releaseJob() throws InterruptedException {
+
+		job = null;
+	}
+
+	public synchronized boolean acceptJob(Job ajob) throws InterruptedException {
+		if( job != null){
+			return false;
+	
+		}
+		job = ajob;
+		notify();
+		return true;
+	}
+
+
+}
+
+
+################ Waiting for a key #############################
+
+public class threadexemple extends Thread{
+	
+	
+	public static void main(String[] args) throws InterruptedException {
+		
+		PC pc1 = new PC();
+		PC pc2 = new PC();
+		pc1.start();
+		pc2.start();
+		pc1.produce();
+		pc2.consume();
+		
+	}
+	
+}
+
+public class PC extends Thread{
+
+	public PC() {
+		
+	}
+	public synchronized void produce() throws InterruptedException{
+			//Pour qu'un thread y ait accès à chaque fois
+			System.out.println("producer thread running");
+			wait();
+			System.out.println("resumed");
+		
+	}
+	
+	public synchronized void consume() throws InterruptedException{
+		
+		Thread.sleep(1000);
+		Scanner sc = new Scanner(System.in);
+		System.out.println("Waiting for return key");
+		sc.nextLine();
+		System.out.println("Return Key pressed");
+		notify();
+		Thread.sleep(2000);
+	}
+	
+	public void run() {
+		
+	}
+}

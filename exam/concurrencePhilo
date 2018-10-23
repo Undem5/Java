@@ -1,0 +1,203 @@
+########" PhiloSimple ##############
+FONCTIONNE????
+
+public class PhiloSimple extends Thread {
+
+	
+	private static final int N = 5;
+	
+	public static void main(String[] args) throws InterruptedException {
+		
+
+		
+		for( int i = 0; i<N;i++) {
+			String nomPhilo = String.valueOf(i);
+			String nom = nomPhilo.concat("sophe");
+		
+			PhiloSimple nomPhilo1 = new PhiloSimple(nom);
+			nomPhilo1.start();
+			
+		}
+		
+	}
+	
+	public PhiloSimple(String num) {
+		super(num);
+	}
+	
+	public void run() {
+		
+		while(true) {
+			try {
+				mange();
+				Thread.sleep((int)(Math.random()*10000));
+				discute();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+	}
+	
+	public synchronized void mange() throws InterruptedException {
+
+		System.out.println( Thread.currentThread().getName() + " s'est mis à table");
+	
+	}
+	
+	public synchronized void discute() throws InterruptedException {
+	
+		System.out.println(Thread.currentThread().getName() + " s'est mis à discuter");
+		
+		
+	}
+}
+############### PHILO COMPLEXE ################
+fonctionne,???
+
+
+public class PhiloComplexe extends Thread {
+
+	
+	
+	private static final int N = 5;
+	public static Arbitre ronaldo;
+	public boolean dispo = true;
+	
+	
+	public static void main(String[] args) throws InterruptedException {
+		
+
+		ronaldo = new Arbitre(N);
+		
+		for( int i = 0; i<N; i++) {
+			String nomPhilo = String.valueOf(i);
+			PhiloComplexe nom1 = new PhiloComplexe(nomPhilo);
+			nom1.start();
+			
+		}
+		
+	}
+	
+	public PhiloComplexe(String num) {
+		super(num);
+	}
+	
+	
+	public void run() {
+		
+		while(true) {
+			try {
+				if( dispo == true) {
+					discute();
+				}
+				
+				Thread.sleep((int)(Math.random()*10000));
+				
+				if( ronaldo.autorisation(Integer.valueOf(Thread.currentThread().getName()))) {
+					mange();
+					Thread.sleep((int)(Math.random()*10000));
+					ronaldo.liberation(Integer.valueOf(Thread.currentThread().getName()));
+				}
+				else {
+					Thread.sleep(1000);
+					dispo = false;
+				}
+				
+				
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+	}
+	
+	public void mange() throws InterruptedException {
+
+		System.out.println( Thread.currentThread().getName() + " s'est mis à table");
+	
+	}
+	
+	public void discute() throws InterruptedException {
+	
+		System.out.println(Thread.currentThread().getName() + " s'est mis à discuter");
+		
+		
+	}
+}
+
+
+import java.util.ArrayList;
+
+public class Arbitre extends Thread {
+
+	
+	public static ArrayList<Boolean> auto = new ArrayList<Boolean>();
+	
+	
+	
+	
+	public static void main(String[] args) {
+		// On suppose donc qu'on à  N philosophes
+		// On suppose true indique baguettes dispo sinon false;
+		
+		System.out.println("Un arbitre sauvage apparait");
+		
+		
+	}
+	
+	public Arbitre(int N) {
+		for( int i=0; i<N+1; i++) {
+						
+			auto.add(true);
+		}
+		System.out.println(auto.size());
+	}
+	
+	public boolean autorisation(int numPhilo) {
+		boolean res;
+		
+		if( auto.get(numPhilo) ==  true) {
+		
+			if( numPhilo == 0 && auto.get(numPhilo+1) == true && auto.get(auto.size()-1) == true) {
+				
+				res = true;
+				auto.set(numPhilo, false);
+				System.out.println("L'arbitre autorise les baguettes");
+				System.out.println(" THREAD 0: " + auto.size());
+				
+			}
+			else if( numPhilo == auto.size()-1 && auto.get(numPhilo-1) == true && auto.get(0) == true) {
+				res = true;
+				auto.set(numPhilo, false);
+
+				System.out.println("L'arbitre autorise les baguettes");
+			}
+			else if( auto.get(numPhilo) == true && auto.get(numPhilo-1) == true && auto.get(numPhilo+1) == true) {
+				res = true;
+				auto.set(numPhilo, false);
+
+				System.out.println("L'arbitre autorise les baguettes");
+
+			}
+			else {
+				res = false;
+				System.out.println("L'arbitre n'autorise pas les baguettes pour" + Thread.currentThread().getName());
+			}
+			
+		}
+		else {
+			System.out.println("L'arbitre n'autorise pas les baguettes" + Thread.currentThread().getName());
+			res = false;
+		}
+		return res;
+	}
+	
+	public void liberation(int numPhilo) {
+		System.out.println(Thread.currentThread().getName() + " libère les baguettes");
+		auto.set(numPhilo, true);
+		
+	}
+}

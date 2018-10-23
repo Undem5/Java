@@ -1,0 +1,151 @@
+####################""" multiThread File ###################
+
+public class ServeurTCP extends Thread {
+	public Socket socketThread;
+	
+	public static void main(String[] args) throws IOException {
+		ServerSocket socket=new ServerSocket();
+		socket.bind(new InetSocketAddress(2000));
+		
+		int i = 0;
+		while(i<10) { // 10 clients
+			/** Creation de la socket */
+			Socket socketreception = socket.accept();
+			ServeurTCP srv = new ServeurTCP(socketreception);
+			srv.start();
+			i++;
+		}
+		socket.close();
+	}
+	
+	public ServeurTCP(Socket socketreception) {
+		this.socketThread = socketreception;
+	}
+	
+	public void run() {
+		try {
+			EnvoiFichier(socketThread);
+		} catch (IOException | InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void EnvoiFichier(Socket socketreception) throws IOException, InterruptedException
+	{
+
+
+		//Fonctionne avec le file transfert avec threads classique?
+
+		
+		InputStream demande=socketreception.getInputStream();
+
+		/**Lecture de la demande du client */
+		byte b[]=new byte[100000];
+		int lecture;
+		String nomFichier=new String();
+
+		while((lecture=demande.read(b))!=-1){
+			nomFichier=nomFichier+new String(b,0,lecture);
+		}
+		socketreception.shutdownInput();
+
+		System.out.println("Nom du fichier envoye:"+nomFichier);
+		/** Envoie de la réponse(contenu fichier) */
+		byte[] bufE = new byte[100000];
+		FileInputStream parcours=new FileInputStream(nomFichier);
+		int tailleFichier=0;
+		while((lecture=parcours.read(bufE))!=-1){
+			tailleFichier=tailleFichier+lecture;
+		}
+		parcours.close();
+		FileInputStream lect=new FileInputStream(nomFichier);
+		OutputStream os = socketreception.getOutputStream();
+		System.out.println("taille fihcier:"+tailleFichier);
+		os.write((tailleFichier+"").getBytes());
+		os.write(";".getBytes());
+		Thread.sleep(50);
+		while((lecture=lect.read(bufE))!=-1){
+			os.write(bufE, 0, lecture);
+			Thread.sleep(50);
+		}
+		lect.close();
+		os.close();
+
+		/** Fermeture de la socket */
+		socketreception.close();
+		System.out.println("######################## ARRET ########################");
+	}
+
+}
+
+public class ClientTCP
+{
+
+	public static void main(String[] args) throws Exception
+	{
+		ClientTCP clientTCP = new ClientTCP();
+		clientTCP.Demandefichier(args[0]);
+	}
+
+	private void Demandefichier(String fichier) throws IOException, InterruptedException
+	{
+		/** Creation de la socket */
+		Socket socket = new Socket();
+
+		/** Connexion au serveur */
+		InetSocketAddress adrDest = new InetSocketAddress("127.0.0.1", 2000);
+		socket.connect(adrDest);                
+
+		/** Envoie de la réponse */
+		byte[] bufE = new String(fichier).getBytes();
+		OutputStream os = socket.getOutputStream();
+		os.write(bufE);
+		socket.shutdownOutput();
+
+		System.out.println("Nom du fichier envoye:"+fichier);
+
+		FileOutputStream recu=new FileOutputStream("copie.txt");
+		InputStream fi=socket.getInputStream();
+		byte b[]=new byte[100000];
+		Thread.sleep(15);
+
+
+		int lenb;
+		int lenrecu=0;
+		byte temp[];
+		String taille = "";
+		boolean tailleRecu=false;
+		int tailleFichier=0;
+		while((lenb=fi.read(b))!=-1){
+			System.out.println(lenrecu + "/" + tailleFichier);
+			if(!tailleRecu){
+				taille =  taille + new String(b,0,lenb);
+				for(int i = 0; i< lenb; i++) {
+					if(taille.substring(0,i).contains(";")) {
+						tailleRecu=true;
+						System.out.println(taille.substring(0, i));
+						tailleFichier = Integer.parseInt(taille.substring(0, i-1));
+						temp = taille.substring(i).getBytes();
+						recu.write(temp, 0, temp.length);
+						lenrecu=temp.length;
+						break;
+					}
+				}
+				Thread.sleep(1000L);
+			}
+			else{
+				lenrecu=lenb+lenrecu;
+				recu.write(b, 0, lenb);
+			}
+
+		}
+
+
+		recu.close();
+
+		/** Fermeture de la socket */
+		socket.close();
+		System.out.println("######################## ARRET ########################");
+	}
+
+}
